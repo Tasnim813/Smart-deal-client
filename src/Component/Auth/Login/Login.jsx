@@ -2,10 +2,21 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import GoogleLogin from '../GoogleLogin/GoogleLogin';
 import { Link } from 'react-router';
+import useAuth from '../../../hook/useAuth';
+import { toast } from 'react-toastify';
 
 const Login = () => {
   const {register, formState:{errors},handleSubmit }=useForm()
-  const handleLogin=()=>{
+  const {SignInUser}=useAuth()
+  const handleLogin=(data)=>{
+    SignInUser(data.email,data.password)
+    .then((result)=>{
+      toast.success("Secessfully Login")
+      console.log(result)
+    }).catch(error=>{
+      console.log(error)
+      toast.error("error")
+    })
 
   }
 

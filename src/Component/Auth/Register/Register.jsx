@@ -2,12 +2,43 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import GoogleLogin from '../GoogleLogin/GoogleLogin';
 import { Link } from 'react-router';
+import useAuth from '../../../hook/useAuth';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 const Register = () => {
     const {register, handleSubmit, formState:{errors}}=useForm()
-    const handleRegister=()=>{
-
+    const {registerUser,UpdateUserProfile}=useAuth()
+    const handleRegister=(data)=>{
+      const profileImage=data.photo[0]
+      registerUser(data.email,data.password)
+      .then(result=>{
+        console.log(result)
+        toast.success("Successfully Register")
+        // Store the image and get photoURL
+        const formData=new FormData()
+        formData.append("image",profileImage)
+        const Image_Api_URL=`https://api.imgbb.com/1/upload?&key=${import.meta.env.VITE_Image_host}`
+        axios.post(Image_Api_URL,formData)
+        .then(res=>{
+          console.log("After Image upload",res.data.data.display_url)
+          const userProfile={
+          displayName:data.name,
+          photoURL:res.data.data.display_url,
+        }
+        UpdateUserProfile(userProfile)
+        .then(()=>{
+          console.log("after image upload")
+        }).catch(error=>{
+          console.log(error)
+        })
+        })
+      }).catch(error=>{
+        console.log(error)
+        toast.error("Error")
+      })
     }
+   
     return (
         <div className="card bg-base-100 mx-auto mt-20 mb-20 w-full max-w-sm shrink-0 shadow-2xl">
        <h1 className='text-3xl font-bold text-center mt-7'>Register Now!</h1>
@@ -37,12 +68,12 @@ const Register = () => {
            
           {/* password */}
           <label className="label">Password</label>
-          <input type="password" {...register('password',{required:true})} className="input" placeholder="Password" minLength={6} />
+          <input type="password" {...register('password',{required:true, minLength:6})} className="input" placeholder="Password" />
           {
             errors.password?.type === 'required' && <p className='text-red-500'>Password is required</p>
           }
           {
-            errors.minLength?.type === 'required' && <p className='text-red-500'>Password is must 6 character</p>
+            errors.password?.type === 'minLength' && <p className='text-red-500'>Password is must 6 character</p>
           }
           
          
